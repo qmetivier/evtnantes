@@ -8,6 +8,15 @@
     #demo {
       font-family: 'Helvetica', Arial, sans-serif;
     }
+
+    .event_div[actif="false"]{
+      display: inline-block;
+      width: 300px;
+      border: 1px solid black;
+      padding: 10px;
+      margin: 10px;
+    }
+
     a {
       text-decoration: none;
       color: #f66;
@@ -25,14 +34,16 @@
 <body>
 <div id="demo">
   <h1>Dernier évènement sur Nantes</h1>
+  <button v-on:click="setTypeList()">Changer le type d'affichage</button>
+  <input type="text"  v-model="query">
   <div>
-      <event-div v-for="event in commits" v-bind:event = event  :key="event.recordid"/>
+      <event-div v-for="event in commits" v-bind:event ="event" v-bind:list="list" :key="event.recordid"/>
   </div>
 </div>
 <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
 <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
 <script>
-  var apiURL = 'https://data.nantesmetropole.fr/api/records/1.0/search/?dataset=244400404_agenda-evenements-nantes-nantes-metropole&facet=emetteur&facet=rubrique&facet=lieu&facet=ville'
+  var apiURL = 'https://data.nantesmetropole.fr/api/records/1.0/search/?dataset=244400404_agenda-evenements-nantes-nantes-metropole&facet=emetteur&facet=rubrique&facet=lieu&facet=ville&q='
 
   /**
    * Actual demo
@@ -41,9 +52,10 @@
   Vue.component('EventDiv', {
     props: {
       event: null,
+      list: String
     },
 
-    template: "<div>" +
+    template: "<div class='event_div' :actif='list'>" +
             "      <a :href=\"event.fields.lien_agenda\" target=\"_blank\" class=\"commit\">{{ event.fields.nom }}</a>\n" +
             "      <img :src=\"event.fields.media_1\" alt=\"\" >\n" +
             "      <br>\n" +
@@ -69,9 +81,9 @@
     el: '#demo',
 
     data: {
-      branches: ['master', 'dev'],
-      currentBranch: 'master',
-      commits: null
+      commits: null,
+      list: "true",
+      query: ""
     },
 
     created: function () {
@@ -79,13 +91,17 @@
     },
 
     watch: {
-      currentBranch: 'fetchData'
+      query: 'fetchData'
     },
 
     methods: {
+      setTypeList : function(){
+        this.list = (this.list === "true") ? "false" : "true";
+      },
+
       fetchData: function () {
-        console.log(apiURL);
-        axios.get(apiURL)
+        console.log(apiURL + this.query);
+        axios.get(apiURL + this.query)
                 .then( res => {
                   console.log(res.data.records);
                   this.commits = res.data.records;
