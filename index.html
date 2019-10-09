@@ -35,7 +35,7 @@
 <div id="demo">
   <h1>Dernier évènement sur Nantes</h1>
   <button v-on:click="setTypeList()">Changer le type d'affichage</button>
-  <input type="text"  v-model="query">
+  <input type="text"  v-model.lazy="query">
   <div>
       <event-div v-for="event in commits" v-bind:event ="event" v-bind:list="list" :key="event.recordid"/>
   </div>
