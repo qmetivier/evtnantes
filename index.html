@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>commits-example</title>
+  <style>
+    #demo {
+      font-family: 'Helvetica', Arial, sans-serif;
+    }
+    a {
+      text-decoration: none;
+      color: #f66;
+    }
+    .author, .date {
+      font-weight: bold;
+    }
+
+    img{
+      width: 60px;
+      height: 60px;
+    }
+  </style>
+</head>
+<body>
+<div id="demo">
+  <h1>Dernier évènement sur Nantes</h1>
+  <div>
+      <event-div v-for="event in commits" v-bind:event = event  :key="event.recordid"/>
+  </div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+<script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+<script>
+  var apiURL = 'https://data.nantesmetropole.fr/api/records/1.0/search/?dataset=244400404_agenda-evenements-nantes-nantes-metropole&facet=emetteur&facet=rubrique&facet=lieu&facet=ville'
+
+  /**
+   * Actual demo
+   */
+
+  Vue.component('EventDiv', {
+    props: {
+      event: null,
+    },
+
+    template: "<div>" +
+            "      <a :href=\"event.fields.lien_agenda\" target=\"_blank\" class=\"commit\">{{ event.fields.nom }}</a>\n" +
+            "      <img :src=\"event.fields.media_1\" alt=\"\" >\n" +
+            "      <br>\n" +
+            "      - <span class=\"message\">{{ event.fields.description | truncate }}</span><br>\n" +
+            "      PAR : <span class=\"author\">{{ event.fields.emetteur }}</span>\n" +
+            "      <br>" +
+            "      LE : <span class=\"date\">{{ event.fields.date | formatDate }}</span>" +
+              "</div>",
+
+    filters: {
+      truncate: function (v) {
+        var newline = v.indexOf('\n')
+        return newline > 0 ? v.slice(0, newline) : v
+      },
+      formatDate: function (v) {
+        return v.replace(/T|Z/g, ' ')
+      }
+    }
+  })
+
+  var demo = new Vue({
+
+    el: '#demo',
+
+    data: {
+      branches: ['master', 'dev'],
+      currentBranch: 'master',
+      commits: null
+    },
+
+    created: function () {
+      this.fetchData()
+    },
+
+    watch: {
+      currentBranch: 'fetchData'
+    },
+
+    methods: {
+      fetchData: function () {
+        console.log(apiURL);
+        axios.get(apiURL)
+                .then( res => {
+                  console.log(res.data.records);
+                  this.commits = res.data.records;
+                })
+                .catch( err => {
+                  console.log(err);
+                });
+      }
+    }
+  })
+</script>
+</body>
+</html>
