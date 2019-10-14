@@ -5,25 +5,50 @@
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <title>commits-example</title>
   <style>
+    body{
+      background-color: rgb(240,240,240);
+    }
+
     #demo {
       font-family: 'Helvetica', Arial, sans-serif;
     }
 
-    .event_div[actif="false"]{
-      display: inline-block;
-      width: 300px;
-      border: 1px solid black;
+    .search_div{
+      margin: 30px 10px;
+    }
+
+    .event_div{
+      background-color: #2c3e50;
+      color: white;
       padding: 10px;
       margin: 10px;
+    }
+
+    .event_div[actif="false"]{
+      display: inline-table;
+      width: 300px;
+      height: 500px;
+      border: 1px solid black;
+    }
+
+    .event_div[actif="false"] .event_desc {
+      height: 360px;
+      overflow-y: hidden;
+    }
+
+    .event_div[actif="false"] .event_desc.hover{
+      height: unset;
     }
 
     a {
       text-decoration: none;
       color: #f66;
     }
+
     .author, .date {
       font-weight: bold;
     }
+
 
     img{
       width: 60px;
@@ -34,14 +59,17 @@
 <body>
 <div id="demo">
   <h1>Dernier évènement sur Nantes</h1>
-  <button v-on:click="setTypeList()">Changer le type d'affichage</button>
-  <input type="text"  v-model.lazy="query">
+  <div class="search_div">
+    <button v-on:click="setTypeList()">Afficher en {{(list == "false") ? "liste" : "carre"}}</button>
+    <input type="text"  v-model.lazy="query">
+  </div>
   <div>
-      <event-div v-for="event in commits" v-bind:event ="event" v-bind:list="list" :key="event.recordid"/>
+      <event-div v-for="event in commits" v-bind:event ="event" v-bind:list="list" :key="event.recordid"></event-div>
   </div>
 </div>
 <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
 <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+<script src="https://momentjs.com/downloads/moment-with-locales.min.js"></script>
 <script>
   var apiURL = 'https://data.nantesmetropole.fr/api/records/1.0/search/?dataset=244400404_agenda-evenements-nantes-nantes-metropole&facet=emetteur&facet=rubrique&facet=lieu&facet=ville&q='
 
@@ -55,26 +83,31 @@
       list: String
     },
 
+    data() {
+      return {
+        hover: false,
+      }
+    },
+
     template: "<div class='event_div' :actif='list'>" +
-            "      <a :href=\"event.fields.lien_agenda\" target=\"_blank\" class=\"commit\">{{ event.fields.nom }}</a>\n" +
-            "      <img :src=\"event.fields.media_1\" alt=\"\" >\n" +
-            "      <br>\n" +
-            "      - <span class=\"message\">{{ event.fields.description | truncate }}</span><br>\n" +
-            "      PAR : <span class=\"author\">{{ event.fields.emetteur }}</span>\n" +
+            "      Le : <span class=\"date\">{{ event.fields.date | formatDate }}</span>" +
+            "      <br><br>" +
+            "      <img :src=\"event.fields.media_1\" alt=\"\" >" +
             "      <br>" +
-            "      LE : <span class=\"date\">{{ event.fields.date | formatDate }}</span>" +
-              "</div>",
+            "      <a :href=\"event.fields.lien_agenda\" target=\"_blank\" class=\"commit\">{{ event.fields.nom }}</a>\n" +
+            "      <div class='event_desc' @mouseover='hover = true' @mouseleave='hover = false' :class='{hover: hover}' >" +
+            "      - <span class=\"message\">{{ event.fields.description }}</span><br>\n" +
+            "      PAR : <span class=\"author\">{{ event.fields.emetteur }}</span>\n" +
+            "      </div>" +
+            "</div>",
 
     filters: {
-      truncate: function (v) {
-        var newline = v.indexOf('\n')
-        return newline > 0 ? v.slice(0, newline) : v
-      },
       formatDate: function (v) {
-        return v.replace(/T|Z/g, ' ')
+        return moment(v).format("DD/MM/YYYY");
       }
-    }
-  })
+    },
+
+  });
 
   var demo = new Vue({
 
@@ -100,10 +133,8 @@
       },
 
       fetchData: function () {
-        console.log(apiURL + this.query);
         axios.get(apiURL + this.query)
                 .then( res => {
-                  console.log(res.data.records);
                   this.commits = res.data.records;
                 })
                 .catch( err => {
