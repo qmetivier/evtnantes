@@ -24,6 +24,14 @@
       margin: 10px;
     }
 
+    .event_div .event_desc{
+      position: relative;
+    }
+
+    .event_div .event_desc .author{
+
+    }
+
     .event_div[actif="false"]{
       display: inline-table;
       width: 300px;
@@ -36,8 +44,12 @@
       overflow-y: hidden;
     }
 
-    .event_div[actif="false"] .event_desc.hover{
-      height: unset;
+    .event_div[actif="true"] .event_desc.hover{
+      max-height: unset;
+    }
+
+    .event_div[actif="true"] .event_desc{
+      max-width: 800px;
     }
 
     a {
@@ -96,8 +108,10 @@
             "      <br>" +
             "      <a :href=\"event.fields.lien_agenda\" target=\"_blank\" class=\"commit\">{{ event.fields.nom }}</a>\n" +
             "      <div class='event_desc' @mouseover='hover = true' @mouseleave='hover = false' :class='{hover: hover}' >" +
-            "      - <span class=\"message\">{{ event.fields.description }}</span><br>\n" +
-            "      PAR : <span class=\"author\">{{ event.fields.emetteur }}</span>\n" +
+            "      - <span class=\"message\">{{ event.fields.description }}</span>" +
+            "        <div class='author_div'>" +
+            "         PAR : <span class=\"author\">{{ event.fields.emetteur }}</span>\n" +
+            "        </div>" +
             "      </div>" +
             "</div>",
 
